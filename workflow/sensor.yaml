@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: github-sensor
+  namespace: argo-events
+spec:
+  dependencies:
+    - name: on-github-event
+      eventSourceName: github-events
+      eventName: pull_request # or "push"
+  triggers:
+    - template:
+        name: workflow-trigger
+        argoWorkflow:
+          sourceRef:
+            resource: YOUR_WORKFLOW_TEMPLATE_NAME

@@ -1,0 +1,57 @@
+name: Build, Scan, Push, and Tag Docker Image to GCP Artifact Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: minor # Increment the minor version (e.g., 1.0.0 -> 1.1.0)
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: projects/<YOUR_PROJECT_NUMBER>/locations/global/workloadIdentityPools/<YOUR_WORKLOAD_IDENTITY_POOL>/providers/<YOUR_PROVIDER>
+          service_account: <YOUR_SERVICE_ACCOUNT_EMAIL>
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker <YOUR_REGION>-docker.pkg.dev
+
+      - name: Extract Version from Tag
+        id: extract_version
+        run: |
+          VERSION=$(echo $GITHUB_REF | awk -F / '{print $3}')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Build and Tag Docker Image
+        run: |
+          docker build -t <YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:$GITHUB_SHA .
+          docker tag <YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:$GITHUB_SHA <YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:${{ env.VERSION }}
+
+      - name: Scan Docker Image for Vulnerabilities (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '<YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:${{ env.VERSION }}'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH' 
+
+      - name: Push Docker Images
+        run: |
+          docker push <YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:$GITHUB_SHA
+          docker push <YOUR_REGION>-docker.pkg.dev/$PROJECT_ID/<YOUR_REPOSITORY>/<YOUR_IMAGE_NAME>:${{ env.VERSION }}

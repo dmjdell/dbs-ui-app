@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: github-events
+  namespace: argo-events
+spec:
+  github:
+    owner: YOUR_GITHUB_ORG_OR_USERNAME
+    repository: YOUR_REPOSITORY_NAME
+    webhookSecret:
+      name: github-secret
+      key: githubToken
+    events:
+      - push
+      - pull_request # Add other events as needed
+    insecure: true # Only for testing; use HTTPS in production
+    # Replace with your Argo Server URL
+    url: http://argo-server.YOUR_NAMESPACE.svc/
