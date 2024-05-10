@@ -1,0 +1,49 @@
+name: Python CI with SAST
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_and_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x' 
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build Project
+        run: python setup.py build
+        
+      - name: Run SAST Scan (Semgrep)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          auditOn: push
+          config: p/bandit  # Use Semgrep's Bandit ruleset
+        continue-on-error: false
+
+      - name: Fail on Bandit Findings
+        if: steps.bandit.outputs.findings != ''
+        run: exit 1
+
+      - name: Run SAST Scan (Semgrep)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          auditOn: push
+        continue-on-error: false # Fail the workflow if Semgrep finds issues
+
+      - name: Upload SAST Results as Artifact (Optional)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: sast-results
+          path: sast-results.txt 
