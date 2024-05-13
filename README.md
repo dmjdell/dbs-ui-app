@@ -23,3 +23,9 @@ helm install \
   kubectl -n kubefirst port-forward svc/kubefirst-console 8080:8080
   
  kubectl patch svc kubefirst-console -n kubefirst -p '{"spec": {"ports": [{"port": 8080,"targetPort": 8080,"name": "https"}],"type": "LoadBalancer"}}'
+
+
+ ##role outs
+
+ kubectl create namespace argo-rollouts
+kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
