@@ -23,12 +23,12 @@ jobs:
 
       - name: Build Project
         run: python setup.py build
-
-      - name: Run SAST Scan (Bandit)
-        uses: py-actions/bandit@v1
+      - name: Run SAST Scan (Semgrep)
+        uses: returntocorp/semgrep-action@v1
         with:
-          targets: .
-        id: bandit
+          auditOn: push
+          config: p/bandit  # Use Semgrep's Bandit ruleset
+        continue-on-error: false
 
       - name: Fail on Bandit Findings
         if: steps.bandit.outputs.findings != ''
