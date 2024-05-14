@@ -7,7 +7,7 @@ pod_name = os.environ.get('MY_POD_NAME', 'N/A')
 
 @app.route('/')
 def index():
-    return render_template('index.html', message="Hello world Blue env")
+    return render_template('index.html', message="Hello world")
 
 @app.route('/health')
 def health():
