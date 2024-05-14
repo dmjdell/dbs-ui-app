@@ -23,6 +23,7 @@ jobs:
 
       - name: Build Project
         run: python setup.py build
+        
       - name: Run SAST Scan (Semgrep)
         uses: returntocorp/semgrep-action@v1
         with:
