@@ -1,0 +1,16 @@
+name: Python Lint
+on:
+  push:
+    pull_request:
+    - main
+jobs:
+  linter:
+    name: Lint on python code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run super-linter
+        uses: super-linter/super-linter@v5.7.2
+        
+    
