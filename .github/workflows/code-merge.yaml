@@ -25,12 +25,12 @@ jobs:
     - name: Build Docker Image
       run: docker build -t $IMAGE_NAME:latest .
 
-      - name: Bump Version
-        uses: reecetech/version-increment@v2024.4.3
-        id: bump_version
-        with:
-          scheme: semver   # Semantic Versioning (vMAJOR.MINOR.PATCH)
-          increment: minor 
+    - name: Bump Version
+      uses: reecetech/version-increment@v2024.4.3
+      id: bump_version
+      with:
+        scheme: semver   # Semantic Versioning (vMAJOR.MINOR.PATCH)
+        increment: minor 
 
     # - name: Automatic Tagging of Releases
     #   id: increment-git-tag
@@ -60,19 +60,6 @@ jobs:
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
-
-    # - name: Checkov GitHub Action
-    #   uses: bridgecrewio/checkov-action@v12
-    #   with:
-    #     # This will add both a CLI output to the console and create a results.sarif file
-    #     output_format: cli,sarif
-    #     output_file_path: console,results.sarif
-        
-    # - name: Upload SARIF file
-    #   uses: github/codeql-action/upload-sarif@v2
-    #   if: success() || failure()
-    #   with:
-    #     sarif_file: results.sarif
 
     - name: Push Docker Image to Artifact Registry
       env:
