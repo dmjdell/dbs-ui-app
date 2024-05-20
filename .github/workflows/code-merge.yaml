@@ -28,7 +28,7 @@ jobs:
     - name: Automatic Tagging of Releases
       id: increment-git-tag
       run: |
-        bash ./scripts/git_update.sh -v minor
+        bash ./scripts/git_update.sh -v major
 
     - name: Configure Docker Client
       run: |-
@@ -39,13 +39,15 @@ jobs:
       env:
         GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
       run: |
-        docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}:latest
-        docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}:$GIT_TAG
+        docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
+        docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:$GIT_TAG
 
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
+      env:
+        GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
       with:
-        image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+        image-ref: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
@@ -69,5 +71,5 @@ jobs:
       env:
         GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
       run: |-
-        docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}:latest
-        docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}:$GIT_TAG
+        docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
+        docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:$GIT_TAG
