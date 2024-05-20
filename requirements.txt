@@ -1,4 +1,5 @@
 Flask==3.0.3
 pytest
 pytest-flask
-setuptools 
+setuptools
+wheel
