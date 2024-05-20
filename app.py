@@ -5,8 +5,9 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    pod_name = os.environ.get('MY_POD_NAME', 'N/A')  # Get pod name from env
-    message = f"Hello world from {pod_name}"           # Use it in the message
+    pod_name = os.environ.get('MY_POD_NAME', 'N/A')
+    env_name = os.environ.get('ENV_NAME', 'N/A')    # Get pod name from env
+    message = f"Hello world from {pod_name} and {env_name}"           # Use it in the message
     return render_template('index.html', message=message)
 
 @app.route('/health')
