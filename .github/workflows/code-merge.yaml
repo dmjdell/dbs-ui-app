@@ -24,11 +24,17 @@ jobs:
 
     - name: Build Docker Image
       run: docker build -t $IMAGE_NAME:latest .
-
-    - name: Automatic Tagging of Releases
-      id: increment-git-tag
-      run: |
-        bash ./scripts/git_update.sh -v major
+      
+    - name: Get next version
+      uses: reecetech/version-increment@2024.4.3
+      id: version
+      with:
+        scheme: semver
+        increment: patch
+    # - name: Automatic Tagging of Releases
+    #   id: increment-git-tag
+    #   run: |
+    #     bash ./scripts/git_update.sh -v major
 
     - name: Configure Docker Client
       run: |-
@@ -37,7 +43,7 @@ jobs:
 
     - name: Build and Tag Docker Image
       env:
-        GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        GIT_TAG: ${{steps.version.outputs.version}}
       run: |
         docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
         docker tag $IMAGE_NAME:latest ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:$GIT_TAG
@@ -45,7 +51,7 @@ jobs:
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       env:
-        GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        GIT_TAG: ${{steps.version.outputs.version}}
       with:
         image-ref: ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
         format: 'table'
@@ -69,7 +75,7 @@ jobs:
 
     - name: Push Docker Image to Artifact Registry
       env:
-        GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        GIT_TAG: ${{steps.version.outputs.version}}
       run: |-
         docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:latest
         docker push ${{ vars.CONTAINER_REGISTRY }}/${{ vars.PROJECT_ID}}/${{ vars.IMAGE_NAME}}/web-app:$GIT_TAG
